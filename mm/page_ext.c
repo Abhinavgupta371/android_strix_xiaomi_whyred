@@ -174,6 +174,24 @@ fail:
 
 #else /* CONFIG_FLAT_NODE_MEM_MAP */
 
+struct page_ext *lookup_page_ext(struct page *page)
+{
+	unsigned long pfn = page_to_pfn(page);
+	struct mem_section *section = __pfn_to_section(pfn);
+	/*
+	 * The sanity checks the page allocator does upon freeing a
+	 * page can reach here before the page_ext arrays are
+	 * allocated when feeding a range of pages to the allocator
+	 * for the first time during bootup or memory hotplug.
+	 *
+	 * This check is also necessary for ensuring page poisoning
+	 * works as expected when enabled
+	 */
+	if (!section->page_ext)
+		return NULL;
+	return section->page_ext + pfn;
+}
+
 static void *__meminit alloc_page_ext(size_t size, int nid)
 {
 	gfp_t flags = GFP_KERNEL | __GFP_ZERO | __GFP_NOWARN;

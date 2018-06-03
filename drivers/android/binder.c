@@ -4484,7 +4484,9 @@ static unsigned int binder_poll(struct file *filp,
 	thread = binder_get_thread(proc);
 	if (!thread) 
 		return POLLERR;
-	
+	if (!thread)
+		return POLLERR;
+
 	binder_inner_proc_lock(thread->proc);
 	thread->looper |= BINDER_LOOPER_STATE_POLL;
 	wait_for_proc_work = binder_available_for_proc_work_ilocked(thread);
